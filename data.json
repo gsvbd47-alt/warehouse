@@ -1,0 +1,14 @@
+[
+  {
+    "product": "SP01",
+    "warehouse": "Kho A",
+    "quantity": 20,
+    "safety_stock": 30
+  },
+  {
+    "product": "SP02",
+    "warehouse": "Kho B",
+    "quantity": 50,
+    "safety_stock": 40
+  }
+]
