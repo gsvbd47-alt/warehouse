@@ -45,7 +45,7 @@ h2 {
   gap: 4px;
 }
 
-.grid .lb-4-7 {
+.lb-4-7 {
   display: grid;
   grid-template-columns: repeat(7, 40px);
   grid-template-rows: repeat(4, 40px);
