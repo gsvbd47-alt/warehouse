@@ -2,36 +2,26 @@
 let warehouseData = {
     slots: {},
     lastUpdate: null,
-    maxStackPerSlot: 9 // Mỗi vị trí tối đa 9 ô
+    maxStackPerSlot: 9
 };
 
 // Configuration
 const config = {
     maxStack: 9,
-    stackHeight: 8, // Chiều cao mỗi ô stack (px)
+    stackHeight: 8,
     colors: {
-        filled: '#ffeb3b', // Màu vàng cho phần đã dùng
-        empty: '#ffffff'   // Màu trắng cho phần trống
+        filled: '#ffeb3b',
+        empty: '#ffffff'
     }
 };
 
 // Initialize warehouse layout
 function initializeWarehouse() {
-    // Create LE row (LE1-LE8)
     createRowSlots('row-le', 'LE', 8);
-    
-    // Create LD row (LD1-LD8)
     createRowSlots('row-ld', 'LD', 8);
-    
-    // Create LB row (LB1-LB7)
     createRowSlots('row-lb', 'LB', 7);
-    
-    // Create LC row (LC1-LC9)
     createRowSlots('row-lc', 'LC', 9);
-    
-    // Initialize LG and LF slots
     initializeFixedSlots();
-    
     updateStats();
 }
 
@@ -40,16 +30,13 @@ function createRowSlots(containerId, prefix, count) {
     for (let i = 1; i <= count; i++) {
         const slotId = `${prefix}${i}`;
         
-        // Create slot wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'slot-wrapper';
         
-        // Create label
         const label = document.createElement('span');
         label.className = 'slot-label';
         label.textContent = slotId;
         
-        // Create slot
         const slot = document.createElement('div');
         slot.className = 'slot';
         slot.dataset.slot = slotId;
@@ -59,13 +46,11 @@ function createRowSlots(containerId, prefix, count) {
         wrapper.appendChild(slot);
         container.appendChild(wrapper);
         
-        // Initialize slot data
         initializeSlotData(slotId);
     }
 }
 
 function initializeFixedSlots() {
-    // Initialize LG1-3 and LF1-4
     const fixedSlots = ['LG1', 'LG2', 'LG3', 'LF1', 'LF2', 'LF3', 'LF4'];
     fixedSlots.forEach(slotId => {
         const slotElement = document.querySelector(`[data-slot="${slotId}"]`);
@@ -79,14 +64,13 @@ function initializeFixedSlots() {
 function initializeSlotData(slotId) {
     warehouseData.slots[slotId] = {
         id: slotId,
-        items: {}, // { 'Grid BM82A': 3, 'Grid BZ82S': 2 }
+        items: {},
         totalCount: 0,
         maxCapacity: config.maxStack,
         lastUpdated: null
     };
 }
 
-// Calculate stock level based on percentage
 function getStockLevel(totalCount) {
     if (totalCount === 0) return 'empty';
     if (totalCount <= 3) return 'low';
@@ -95,26 +79,21 @@ function getStockLevel(totalCount) {
     return 'full';
 }
 
-// Update slot visual with vertical stack display
 function updateSlotVisual(slotId) {
     const slotElement = document.querySelector(`[data-slot="${slotId}"]`);
     if (!slotElement) return;
     
     const slotData = warehouseData.slots[slotId];
     
-    // Clear existing content
     slotElement.innerHTML = '';
     
-    // Create vertical stack container
     const stackContainer = document.createElement('div');
     stackContainer.className = 'stack-container';
     
-    // Create 9 stack boxes (from top to bottom)
     for (let i = config.maxStack - 1; i >= 0; i--) {
         const stackBox = document.createElement('div');
         stackBox.className = 'stack-box';
         
-        // Fill boxes from bottom up
         if (i < slotData.totalCount) {
             stackBox.classList.add('filled');
         } else {
@@ -124,7 +103,6 @@ function updateSlotVisual(slotId) {
         stackContainer.appendChild(stackBox);
     }
     
-    // Create text info at bottom
     const textInfo = document.createElement('div');
     textInfo.className = 'slot-info';
     
@@ -134,7 +112,7 @@ function updateSlotVisual(slotId) {
             .map(([name, count]) => `${name}: ${count}`)
             .join('\n');
         textInfo.textContent = items;
-        textInfo.title = items; // Tooltip
+        textInfo.title = items;
     } else {
         textInfo.textContent = 'Trống';
     }
@@ -142,12 +120,10 @@ function updateSlotVisual(slotId) {
     slotElement.appendChild(stackContainer);
     slotElement.appendChild(textInfo);
     
-    // Set data level for styling
     const level = getStockLevel(slotData.totalCount);
     slotElement.dataset.level = level;
 }
 
-// Handle slot click
 function handleSlotClick(slotId) {
     const slotData = warehouseData.slots[slotId];
     if (!slotData) return;
@@ -171,7 +147,6 @@ function handleSlotClick(slotId) {
     alert(infoText);
 }
 
-// CSV Data Handling
 function loadCSVData() {
     const fileInput = document.getElementById('csvFile');
     fileInput.onchange = handleFileUpload;
@@ -186,15 +161,19 @@ function handleFileUpload(event) {
     reader.onload = function(e) {
         const csvText = e.target.result;
         parseCSV(csvText);
+        console.log('✅ Đã tải dữ liệu từ file upload');
     };
     reader.readAsText(file);
+}
+
+function reloadDefaultCSV() {
+    autoLoadCSV();
 }
 
 function parseCSV(csvText) {
     const lines = csvText.split('\n');
     const headers = lines[0].split(',').map(h => h.trim().toUpperCase());
     
-    // Find column indices
     const descrIndex = headers.indexOf('DESCR');
     const locIndex = headers.indexOf('LOC');
     
@@ -203,13 +182,11 @@ function parseCSV(csvText) {
         return;
     }
     
-    // Reset all slots
     Object.keys(warehouseData.slots).forEach(slotId => {
         warehouseData.slots[slotId].items = {};
         warehouseData.slots[slotId].totalCount = 0;
     });
     
-    // Group data by LOC
     const locationMap = {};
     
     for (let i = 1; i < lines.length; i++) {
@@ -232,7 +209,6 @@ function parseCSV(csvText) {
         locationMap[loc][descr]++;
     }
     
-    // Update warehouse data
     let updatedCount = 0;
     Object.entries(locationMap).forEach(([loc, items]) => {
         if (warehouseData.slots[loc]) {
@@ -247,11 +223,9 @@ function parseCSV(csvText) {
     updateStats();
     alert(`Đã tải thành công ${updatedCount} vị trí từ file CSV!\nTổng ${Object.keys(locationMap).length} vị trí có dữ liệu.`);
     
-    // Reset file input
     document.getElementById('csvFile').value = '';
 }
 
-// Update warehouse display
 function updateWarehouseDisplay() {
     Object.keys(warehouseData.slots).forEach(slotId => {
         updateSlotVisual(slotId);
@@ -259,7 +233,6 @@ function updateWarehouseDisplay() {
     updateStats();
 }
 
-// Update statistics
 function updateStats() {
     const slots = Object.values(warehouseData.slots);
     const total = slots.length;
@@ -273,7 +246,6 @@ function updateStats() {
     document.getElementById('usage-rate').textContent = rate + '%';
 }
 
-// Filter data
 function filterData() {
     const filterOptions = [
         'all - Tất cả',
@@ -305,7 +277,6 @@ function filterData() {
     });
 }
 
-// Reset view
 function resetView() {
     Object.keys(warehouseData.slots).forEach(slotId => {
         const slotElement = document.querySelector(`[data-slot="${slotId}"]`);
@@ -314,7 +285,6 @@ function resetView() {
     });
 }
 
-// Export data to CSV
 function exportData() {
     let csvContent = 'slot_id,descr,count,total_count,last_updated\n';
     
@@ -341,59 +311,26 @@ function exportData() {
     window.URL.revokeObjectURL(url);
 }
 
-// API Integration Example (commented out)
-/*
-async function loadDataFromAPI() {
-    try {
-        const response = await fetch('YOUR_API_ENDPOINT');
-        const data = await response.json();
-        
-        // Process API data
-        data.forEach(item => {
-            if (warehouseData.slots[item.slot_id]) {
-                warehouseData.slots[item.slot_id] = {
-                    id: item.slot_id,
-                    status: item.quantity > 0 ? 'occupied' : 'empty',
-                    product: item.product,
-                    quantity: item.quantity,
-                    maxCapacity: item.max_capacity,
-                    stockPercentage: Math.round((item.quantity / item.max_capacity) * 100),
-                    lastUpdated: item.last_updated
-                };
-                updateSlotVisual(item.slot_id);
-            }
-        });
-        
-        updateStats();
-        alert('Dữ liệu đã được tải từ API!');
-    } catch (error) {
-        console.error('Lỗi khi tải dữ liệu từ API:', error);
-        alert('Không thể tải dữ liệu từ API. Vui lòng thử lại!');
-    }
-}
-*/
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    initializeWarehouse();
-    
-    // Auto-load CSV file on startup
-    autoLoadCSV();
-    
-    console.log('Hệ thống quản lý kho đã sẵn sàng!');
-    console.log('Tổng số vị trí:', Object.keys(warehouseData.slots).length);
-});
-
-// Auto load CSV from file
 async function autoLoadCSV() {
-    const csvFileName = 'sample_data.csv'; // Tên file CSV trong cùng thư mục
+    const csvFileName = 'sample_data.csv';
+    
+    let baseURL = window.location.origin;
+    const pathname = window.location.pathname;
+    
+    if (pathname !== '/' && pathname !== '/index.html') {
+        const folder = pathname.substring(0, pathname.lastIndexOf('/'));
+        baseURL += folder;
+    }
+    
+    const fullURL = baseURL + '/' + csvFileName;
+    
+    console.log('🔍 Đang tải CSV từ:', fullURL);
     
     try {
         const response = await fetch(csvFileName);
         
         if (!response.ok) {
-            console.warn(`Không tìm thấy file ${csvFileName}. Vui lòng upload file CSV thủ công.`);
-            return;
+            throw new Error(`HTTP ${response.status}`);
         }
         
         const csvText = await response.text();
@@ -401,12 +338,20 @@ async function autoLoadCSV() {
         
         console.log(`✅ Đã tự động tải dữ liệu từ ${csvFileName}`);
     } catch (error) {
-        console.warn('Không thể tự động tải file CSV:', error.message);
-        console.log('Bạn có thể upload file CSV thủ công bằng nút "Tải Dữ Liệu CSV"');
+        console.warn('⚠️ Không thể tự động tải file CSV:', error.message);
+        console.log('📁 Đường dẫn thử: ', fullURL);
+        console.log('💡 Bạn có thể upload file CSV thủ công bằng nút "Tải Dữ Liệu CSV Khác"');
+        console.log('📝 Đảm bảo file sample_data.csv nằm cùng thư mục với index.html');
     }
 }
 
-// Export functions for external use
+document.addEventListener('DOMContentLoaded', function() {
+    initializeWarehouse();
+    autoLoadCSV();
+    console.log('Hệ thống quản lý kho đã sẵn sàng!');
+    console.log('Tổng số vị trí:', Object.keys(warehouseData.slots).length);
+});
+
 window.warehouseAPI = {
     getData: () => warehouseData,
     updateSlot: (slotId, data) => {
@@ -422,5 +367,16 @@ window.warehouseAPI = {
     },
     refreshDisplay: () => updateWarehouseDisplay(),
     parseCSVText: (csvText) => parseCSV(csvText),
-    getSlotInfo: (slotId) => warehouseData.slots[slotId]
+    getSlotInfo: (slotId) => warehouseData.slots[slotId],
+    loadCSVFromURL: async (url) => {
+        try {
+            const response = await fetch(url);
+            const csvText = await response.text();
+            parseCSV(csvText);
+            console.log(`✅ Đã tải dữ liệu từ ${url}`);
+        } catch (error) {
+            console.error('Lỗi khi tải CSV từ URL:', error);
+        }
+    },
+    reloadDefault: () => autoLoadCSV()
 };
