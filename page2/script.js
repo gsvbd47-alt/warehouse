@@ -2,7 +2,7 @@
 let warehouseData = {
     slots: {},
     lastUpdate: null,
-    maxStackPerSlot: 12 // Mỗi vị trí tối đa 9 ô
+    maxStackPerSlot: 9 // Mỗi vị trí tối đa 9 ô
 };
 
 // Configuration
@@ -10,7 +10,7 @@ const config = {
     maxStack: 9,
     stackHeight: 8, // Chiều cao mỗi ô stack (px)
     colors: {
-        filled: '#89ff3b', // Màu vàng cho phần đã dùng
+        filled: '#ffeb3b', // Màu vàng cho phần đã dùng
         empty: '#ffffff'   // Màu trắng cho phần trống
     }
 };
@@ -376,9 +376,35 @@ async function loadDataFromAPI() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeWarehouse();
+    
+    // Auto-load CSV file on startup
+    autoLoadCSV();
+    
     console.log('Hệ thống quản lý kho đã sẵn sàng!');
     console.log('Tổng số vị trí:', Object.keys(warehouseData.slots).length);
 });
+
+// Auto load CSV from file
+async function autoLoadCSV() {
+    const csvFileName = 'sample_data.csv'; // Tên file CSV trong cùng thư mục
+    
+    try {
+        const response = await fetch(csvFileName);
+        
+        if (!response.ok) {
+            console.warn(`Không tìm thấy file ${csvFileName}. Vui lòng upload file CSV thủ công.`);
+            return;
+        }
+        
+        const csvText = await response.text();
+        parseCSV(csvText);
+        
+        console.log(`✅ Đã tự động tải dữ liệu từ ${csvFileName}`);
+    } catch (error) {
+        console.warn('Không thể tự động tải file CSV:', error.message);
+        console.log('Bạn có thể upload file CSV thủ công bằng nút "Tải Dữ Liệu CSV"');
+    }
+}
 
 // Export functions for external use
 window.warehouseAPI = {
