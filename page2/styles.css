@@ -151,7 +151,7 @@ h1 {
 }
 
 .stack-box {
-    height: 2px;
+    height: 8px;
     border: 0.2px solid #e7e7e7;
     transition: background-color 0.3s;
 }
@@ -394,3 +394,4 @@ h1 {
     }
 
 }
+
