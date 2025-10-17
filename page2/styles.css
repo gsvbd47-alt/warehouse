@@ -11,7 +11,7 @@ body {
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     background: white;
     padding: 30px;
@@ -394,4 +394,5 @@ h1 {
     }
 
 }
+
 
