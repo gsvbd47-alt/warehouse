@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Kho Hàng</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>HỆ THỐNG QUẢN LÝ KHO HÀNG</h1>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="loadCSVData()">Tải Dữ Liệu CSV</button>
+            <button class="btn btn-secondary" onclick="exportData()">Xuất Báo Cáo</button>
+            <button class="btn btn-secondary" onclick="filterData()">Lọc Dữ Liệu</button>
+            <button class="btn btn-secondary" onclick="resetView()">Reset View</button>
+            <button class="btn btn-primary" onclick="loadDataFromAPI()">Tải Dữ Liệu Từ API</button>
+            <input type="file" id="csvFile" accept=".csv" style="display:none">
+        </div>
+
+        <div class="warehouse-grid">
+            <!-- Top Left: Furnace Area -->
+            <div class="section-top-left">
+                <!-- Row 1: Xạc xe nâng và LG -->
+                <div class="equipment-row">
+                    <div class="label-equipment">XẠC XE NÂNG</div>
+                    <div class="slots-horizontal">
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LG1</span>
+                            <div class="slot" data-slot="LG1"></div>
+                        </div>
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LG2</span>
+                            <div class="slot" data-slot="LG2"></div>
+                        </div>
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LG3</span>
+                            <div class="slot" data-slot="LG3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Lò ủ và LF -->
+                <div class="equipment-row">
+                    <div class="label-equipment">LÒ Ủ</div>
+                    <div class="slots-horizontal">
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LF1</span>
+                            <div class="slot" data-slot="LF1"></div>
+                        </div>
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LF2</span>
+                            <div class="slot" data-slot="LF2"></div>
+                        </div>
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LF3</span>
+                            <div class="slot" data-slot="LF3"></div>
+                        </div>
+                        <div class="slot-wrapper">
+                            <span class="slot-label">LF4</span>
+                            <div class="slot" data-slot="LF4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Right: Elevator Area -->
+            <div class="section-top-right">
+                <div class="elevator-label">KHU VỰC THANG MÁY</div>
+            </div>
+        </div>
+
+        <!-- Bottom Rows - 2 columns layout -->
+        <div class="rows-grid">
+            <!-- Left Column: LE and LB -->
+            <div>
+                <div class="row-container">
+                    <div class="row-label">Dãy LE</div>
+                    <div class="slots-row" id="row-le"></div>
+                </div>
+
+                <div class="row-container">
+                    <div class="row-label">Dãy LB</div>
+                    <div class="slots-row" id="row-lb"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: LD and LC -->
+            <div>
+                <div class="row-container">
+                    <div class="row-label">Dãy LD</div>
+                    <div class="slots-row" id="row-ld"></div>
+                </div>
+
+                <div class="row-container">
+                    <div class="row-label">Dãy LC</div>
+                    <div class="slots-row" id="row-lc"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <h3>THỐNG KÊ KHO</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Tổng vị trí</div>
+                    <div class="stat-value" id="total-slots">39</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Đã sử dụng</div>
+                    <div class="stat-value" id="occupied-slots">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Còn trống</div>
+                    <div class="stat-value" id="empty-slots">39</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tỷ lệ sử dụng</div>
+                    <div class="stat-value" id="usage-rate">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h4>Chú thích:</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e0e0e0; border-color: #999;"></div>
+                    <span>Trống (0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to top, #ffeb3b 33%, #fff 33%); border-color: #81c784;"></div>
+                    <span>Ít (1-3/9)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to top, #ffeb3b 56%, #fff 56%); border-color: #ffeb3b;"></div>
+                    <span>Trung bình (4-6/9)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to top, #ffeb3b 78%, #fff 78%); border-color: #ffa726;"></div>
+                    <span>Cao (7-8/9)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffeb3b; border-color: #ef5350;"></div>
+                    <span>Đầy (9/9)</span>
+                </div>
+            </div>
+            <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                <strong>Cấu trúc CSV:</strong> DESCR, LOC<br>
+                Mỗi vị trí tối đa 9 ô, màu vàng hiển thị số ô đã sử dụng từ dưới lên.
+            </p>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
